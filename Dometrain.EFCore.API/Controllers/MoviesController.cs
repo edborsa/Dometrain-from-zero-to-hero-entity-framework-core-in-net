@@ -34,7 +34,21 @@ public class MoviesController : Controller
             ? NotFound()
             : Ok(movie);
     }
-    
+
+    [HttpGet("by-year/{year:int}")]
+    [ProducesResponseType(typeof(List<Movie>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAllByYear([FromRoute] int year)
+    {
+        var filteredMovies = _context.Movies.Where(x => x.ReleaseDate.Year == year);
+
+        // var filteredMovies2 =
+        //     from movie in _context.Movies
+        //     where movie.ReleaseDate.Year == year
+        //     select movie;
+        return Ok(await filteredMovies.ToListAsync());
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(Movie), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] Movie movie)
@@ -45,7 +59,7 @@ public class MoviesController : Controller
 
         return CreatedAtAction(nameof(Get), new { id = movie.Id }, movie);
     }
-    
+
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(Movie), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -60,13 +74,13 @@ public class MoviesController : Controller
 
         existingMovie.Title = movie.Title;
         existingMovie.ReleaseDate = movie.ReleaseDate;
-        existingMovie.Synopsis= movie.Synopsis;
+        existingMovie.Synopsis = movie.Synopsis;
 
         await _context.SaveChangesAsync();
 
         return Ok(existingMovie);
     }
-    
+
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
