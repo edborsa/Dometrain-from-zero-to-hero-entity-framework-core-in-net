@@ -2,7 +2,6 @@ using Dometrain.EFCore.API.Data;
 using Dometrain.EFCore.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 namespace Dometrain.EFCore.API.Controllers;
 
 [ApiController]
@@ -15,7 +14,7 @@ public class MoviesController : Controller
     {
         _context = context;
     }
-
+    
     [HttpGet]
     [ProducesResponseType(typeof(List<Movie>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
@@ -28,41 +27,45 @@ public class MoviesController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] int id)
     {
-        var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
-
+        // Queries database, returns first match, null if not found.
+        // var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
+        // Similar to FirstOrDefault, but throws if more than one match is found.
+        // var movie = await _context.Movies.SingleOrDefaultAsync(m => m.Id == id);
+        // Serves match from memory if already fetched, otherwise queries DB.
+        var movie = await _context.Movies.FindAsync(id);
+        
         return movie == null
             ? NotFound()
             : Ok(movie);
     }
-
+    
     [HttpGet("by-year/{year:int}")]
-    [ProducesResponseType(typeof(List<Movie>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(List<MovieTitle>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllByYear([FromRoute] int year)
     {
-        var filteredMovies = await _context.Movies
-            .Where(x => x.ReleaseDate.Year == year)
-            .Select(movie => new { Id = movie.Id, Title = movie.Title })
+        var filteredTitles = await _context.Movies
+            .Where(movie => movie.ReleaseDate.Year == year)
+            .Select(movie => new MovieTitle { Id = movie.Id, Title = movie.Title})
             .ToListAsync();
 
-        // var filteredMovies2 =
-        //     from movie in _context.Movies
-        //     where movie.ReleaseDate.Year == year
-        //     select movie;
-        return Ok(filteredMovies);
+        return Ok(filteredTitles);
     }
-
+    
     [HttpPost]
     [ProducesResponseType(typeof(Movie), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] Movie movie)
     {
         await _context.Movies.AddAsync(movie);
-
+        
+        // movie has no ID
+        
         await _context.SaveChangesAsync();
+        
+        // movie has an ID
 
         return CreatedAtAction(nameof(Get), new { id = movie.Id }, movie);
     }
-
+    
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(Movie), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -71,9 +74,7 @@ public class MoviesController : Controller
         var existingMovie = await _context.Movies.FindAsync(id);
 
         if (existingMovie is null)
-        {
             return NotFound();
-        }
 
         existingMovie.Title = movie.Title;
         existingMovie.ReleaseDate = movie.ReleaseDate;
@@ -83,7 +84,7 @@ public class MoviesController : Controller
 
         return Ok(existingMovie);
     }
-
+    
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -92,11 +93,12 @@ public class MoviesController : Controller
         var existingMovie = await _context.Movies.FindAsync(id);
 
         if (existingMovie is null)
-        {
             return NotFound();
-        }
 
         _context.Movies.Remove(existingMovie);
+        // _context.Remove(existingMovie);
+        // _context.Movies.Remove( new Movie { Id = id });
+
         await _context.SaveChangesAsync();
 
         return Ok();

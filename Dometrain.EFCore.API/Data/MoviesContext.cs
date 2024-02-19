@@ -6,17 +6,18 @@ namespace Dometrain.EFCore.API.Data;
 public class MoviesContext : DbContext
 {
     public DbSet<Movie> Movies => Set<Movie>();
+    public DbSet<Genre> Genres => Set<Genre>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer(
-            """
+        optionsBuilder.UseSqlServer("""
             Data Source=localhost;
             Initial Catalog=MoviesDB;
-            User ID=sa;
-            Password=docker_123;
-            TrustServerCertificate=True
+            User Id=sa;
+            Password=MySaPassword123;
+            TrustServerCertificate=True;
             """);
+        // Not proper logging
         optionsBuilder.LogTo(Console.WriteLine);
         base.OnConfiguring(optionsBuilder);
     }
