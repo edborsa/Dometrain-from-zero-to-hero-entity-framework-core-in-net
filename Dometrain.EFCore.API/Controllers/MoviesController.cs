@@ -40,13 +40,16 @@ public class MoviesController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllByYear([FromRoute] int year)
     {
-        var filteredMovies = _context.Movies.Where(x => x.ReleaseDate.Year == year);
+        var filteredMovies = await _context.Movies
+            .Where(x => x.ReleaseDate.Year == year)
+            .Select(movie => new { Id = movie.Id, Title = movie.Title })
+            .ToListAsync();
 
         // var filteredMovies2 =
         //     from movie in _context.Movies
         //     where movie.ReleaseDate.Year == year
         //     select movie;
-        return Ok(await filteredMovies.ToListAsync());
+        return Ok(filteredMovies);
     }
 
     [HttpPost]
