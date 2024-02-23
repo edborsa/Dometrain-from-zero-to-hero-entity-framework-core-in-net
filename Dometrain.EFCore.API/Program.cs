@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Dometrain.EFCore.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
