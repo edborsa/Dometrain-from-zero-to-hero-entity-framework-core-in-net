@@ -1,3 +1,4 @@
+using System;
 using Dometrain.EFCore.API.Data.EntityMapping;
 using Dometrain.EFCore.API.Models;
 using Microsoft.EntityFrameworkCore;
