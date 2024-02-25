@@ -4,6 +4,7 @@ using Dometrain.EFCore.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dometrain.EFCore.API.Migrations
 {
     [DbContext(typeof(MoviesContext))]
-    partial class MoviesContextModelSnapshot : ModelSnapshot
+    [Migration("20240225204325_AddedImdbRating")]
+    partial class AddedImdbRating
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,8 +58,8 @@ namespace Dometrain.EFCore.API.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(32)");
 
-                    b.Property<decimal>("InternetRating")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("ImdbRating")
+                        .HasColumnType("int");
 
                     b.Property<int>("MainGenreId")
                         .HasColumnType("int");
