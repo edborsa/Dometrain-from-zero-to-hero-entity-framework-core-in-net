@@ -1,3 +1,4 @@
+using Dometrain.EFCore.API.Data.ValueConverters;
 using Dometrain.EFCore.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,6 +11,7 @@ public class MovieMapping : IEntityTypeConfiguration<Movie>
     {
         builder
             .ToTable("Pictures")
+            .HasQueryFilter(movie => movie.ReleaseDate >= new DateTime(1990,1,1))
             .HasKey(movie => movie.Identifier);
 
         builder.Property(movie => movie.Title)
@@ -18,12 +20,22 @@ public class MovieMapping : IEntityTypeConfiguration<Movie>
             .IsRequired();
 
         builder.Property(movie => movie.ReleaseDate)
-            .HasColumnType("date");
+            .HasColumnType("char(8)")
+            .HasConversion(new DateTimeToChar8Converter());
 
         builder.Property(movie => movie.Synopsis)
             .HasColumnType("varchar(max)")
             .HasColumnName("Plot");
 
+        builder.Property(movie => movie.AgeRating)
+            .HasColumnType("varchar(32)")
+            .HasConversion<string>();
+
+        builder.OwnsOne(movie => movie.Director)
+            .ToTable("Movie_Directors");
+        
+        builder.OwnsMany(movie => movie.Actors)
+            .ToTable("Movie_Actors");
 
         builder
             .HasOne(movie => movie.Genre)
@@ -38,7 +50,17 @@ public class MovieMapping : IEntityTypeConfiguration<Movie>
             Title = "Fight Club",
             ReleaseDate = new DateTime(1999, 9, 10),
             Synopsis = "Ed Norton and Brad Pitt have a couple of fist fights with each other.",
-            MainGenreId = 1
+            MainGenreId = 1,
+            AgeRating = AgeRating.Adolescent
         });
+
+        builder.OwnsOne(movie => movie.Director)
+            .HasData(new { MovieIdentifier = 1, FirstName = "David", LastName = "Fincher" });
+
+        builder.OwnsMany(movie => movie.Actors)
+            .HasData(
+                new { MovieIdentifier = 1, Id = 1, FirstName = "Edward", LastName = "Norton" },
+                new { MovieIdentifier = 1, Id = 2, FirstName = "Brad", LastName = "Pitt" }
+            );
     }
 }
