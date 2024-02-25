@@ -16,7 +16,7 @@ public class MoviesContext : DbContext
             Data Source=localhost;
             Initial Catalog=MoviesDB;
             User Id=sa;
-            Password=MySaPassword123;
+            Password=docker_123;
             TrustServerCertificate=True;
             """);
         // Not proper logging
